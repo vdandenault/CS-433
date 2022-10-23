@@ -1,15 +1,15 @@
 from helpers import load_csv_data, create_csv_submission
-#from logistic_regression import logistic_regression
-from implementations import *
+from implementations import ridge_regression, least_squares_GD, least_squares,  \
+        predict_logistic_regression, logistic_regression, reg_logistic_regression
 import numpy as np
 
 import pickle, os
 
 def main():
-    print("start")
+    print("Reading the data")
     if not os.path.exists("data.p"):
-        yb_train, input_data_train, ids_train = load_csv_data(data_path='../Data/train.csv')
-        yb_test, input_data_test, ids_test = load_csv_data(data_path='../Data/test.csv')
+        yb_train, input_data_train, ids_train = load_csv_data(data_path='Data/train.csv')
+        yb_test, input_data_test, ids_test = load_csv_data(data_path='Data/test.csv')
         print("data is loaded")
 
         pickle.dump((yb_train, input_data_train, ids_train, yb_test, input_data_test, ids_test), open("data.p", "wb"))
@@ -18,21 +18,18 @@ def main():
         print("sunglasses on")
 
     initial_w = np.zeros((input_data_train.shape[1],1))
-    inital_b = np.zeros((input_data_train.shape[1],1))
-    max_iters = 1000
+    max_iters = 100
     gamma = 0.01
     lambda_ = 0.5
 
     print("time to train!")
-    #w,b, losses = logistic_regression(yb_train, input_data_train, inital_b, initial_w, max_iters, gamma)
-    #w, loss = least_squares_GD(yb_train, input_data_train, initial_w, max_iters, gamma)
-    #w, loss = least_squares(yb_train, input_data_train)
-    w, loss = ridge_regression(yb_train, input_data_train, lambda_)
+    #w, _ = logistic_regression(yb_train, input_data_train, initial_w, max_iters, gamma)
+    #labels = predict_logistic_regression(input_data_test.T, w)
 
-    print(w)
-    print(loss)
-    #print(b)
-    #print(losses)
+    w, _ = reg_logistic_regression(yb_train, input_data_train, lambda_, initial_w, max_iters, gamma)
+    labels = predict_logistic_regression(input_data_test.T, w)
+
+    create_csv_submission(ids=ids_test, y_pred=labels, name="Results/Submission_logistic_regression")
 
 if __name__ == "__main__":
     main()

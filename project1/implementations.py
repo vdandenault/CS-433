@@ -6,6 +6,25 @@ def compute_loss(y, tx, w):
     #return (1/(2*N)) * np.dot(e.T, e)
     return (1/(2*N)) * sum((y[i] - tx[i].T @ w) ** 2  for i in range(N))
 
+def sigmoid(z):
+    return 1.0/(1 + np.exp(-z))
+
+def gradients(X, y, y_hat):    
+    dw = (1/X.shape[0])*np.dot(X.T, (y_hat - y))
+    db = (1/X.shape[0])*np.sum((y_hat - y)) 
+    return dw, db
+
+def normalize(X):
+    return [(X - X.mean(axis=0))/X.std(axis=0) for _ in range(X.shape[1])]
+
+def predict_logistic_regression(X, w):
+    preds = np.array(sigmoid(predict(X, w)))
+    pred_class = [1 if i > 0.5 else -1 for i in preds]
+    return pred_class
+
+def predict(tx, w):
+    return tx.T @ w
+
 def least_squares_GD(y, tx, initial_w, max_iters, gamma):
     """The Gradient Descent (GD) algorithm.
         
@@ -134,9 +153,6 @@ def least_squares_SGD(y, tx, initial_w, max_iters, gamma):
     
     return ws[-1], losses[-1]
 
-def predict(tx, w):
-    return tx.T @ w
-
 def least_squares(y, tx):
     """Calculate the least squares solution.
        returns mse, and optimal weights.
@@ -189,3 +205,61 @@ def ridge_regression(y, tx, lambda_):
     
     loss = compute_loss(y, tx, w)  
     return w, loss
+
+
+def logistic_regression(y, tx, initial_w, max_iters, gamma): 
+    #Logistic regression using gradient descent or SGD (y ∈ {0, 1})
+    def train(X, y, epochs, lr, initial_w):
+        m, _ = X.shape
+        w = initial_w
+        b = 0
+        batch_size = 100
+        y = y.reshape(m,1)
+
+        losses = []
+
+        for epoch in range(epochs):
+            for i in range((m-1)//batch_size + 1):
+                start_i = i*batch_size
+                end_i = start_i + batch_size
+                xb = X[start_i:end_i]
+                yb = y[start_i:end_i]
+
+                y_hat = sigmoid(np.dot(xb, w) + b)
+                dw, db = gradients(xb, yb, y_hat)
+
+
+                w -= lr*dw
+                b -= lr*db
+
+            print("Epoch number: " + str(epoch))
+            losses.append(compute_loss(y, X, w))
+        
+        return w, losses[-1]
+    
+    return train(X=tx, y=y, epochs=max_iters, lr=gamma, initial_w=initial_w) 
+
+def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma): 
+    def train(X, y, epochs, lr, initial_w):
+        m, _ = X.shape
+        w = initial_w
+        b = 0
+        batch_size = 100
+        y = y.reshape(m,1)
+        losses = []
+        for epoch in range(epochs):
+            for i in range((m-1)//batch_size + 1):
+                start_i = i*batch_size
+                end_i = start_i + batch_size
+                xb = X[start_i:end_i]
+                yb = y[start_i:end_i]
+                y_hat = sigmoid(np.dot(xb, w) + b)
+                dw, db = gradients(xb, yb, y_hat)
+                w -= lr*(lambda_ * (dw*dw))
+                b -= lr* (lambda_ * (db*db))
+            print("Epoch number: " + str(epoch))
+            losses.append(compute_loss(y, X, w))
+
+        return w, losses[-1] 
+    return train(X=tx, y=y, epochs=max_iters, lr=gamma, initial_w=initial_w) 
+
