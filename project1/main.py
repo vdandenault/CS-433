@@ -1,5 +1,5 @@
 from helpers import load_csv_data, create_csv_submission
-from implementations import ridge_regression, least_squares_GD, least_squares,  \
+from implementations import predict_least_squares, ridge_regression, least_squares_GD, least_squares,  \
         predict_logistic_regression, logistic_regression, reg_logistic_regression
 import numpy as np
 
@@ -23,14 +23,14 @@ def main():
     lambda_ = 0.5
 
     print("time to train!")
-    w, loss = least_squares_GD(yb_train, input_data_train, initial_w, max_iters, gamma)
+    w, _ = least_squares_GD(yb_train, input_data_train, initial_w, max_iters, gamma)
     #w, _ = logistic_regression(yb_train, input_data_train, initial_w, max_iters, gamma)
     #labels = predict_logistic_regression(input_data_test.T, w)
 
-    w, _ = reg_logistic_regression(yb_train, input_data_train, lambda_, initial_w, max_iters, gamma)
-    labels = predict_logistic_regression(input_data_test.T, w)
+    #w, _ = reg_logistic_regression(yb_train, input_data_train, lambda_, initial_w, max_iters, gamma)
+    labels = predict_least_squares(input_data_test.T, w)
 
-    create_csv_submission(ids=ids_test, y_pred=labels, name="Results/Submission_logistic_regression")
+    create_csv_submission(ids=ids_test, y_pred=labels, name="Results/Submission_least_squares_GD")
 
 if __name__ == "__main__":
     main()
