@@ -25,6 +25,11 @@ def predict_logistic_regression(X, w):
 def predict(tx, w):
     return tx.T @ w
 
+def predict_least_squares(X, w):
+    preds = predict(X, w)
+    pred_class = [1 if i > 0.5 else -1 for i in preds]
+    return pred_class
+
 def compute_loss(y, tx, w): #loss for least squares
     N = y.shape[0]
     return (1/(2*N)) * sum((y[i] - tx[i].T @ w) ** 2  for i in range(N))
@@ -52,12 +57,13 @@ def least_squares_GD(y, tx, initial_w, max_iters, gamma):
     w = initial_w
     for n_iter in range(max_iters):
         grad = compute_gradient_least_squares(y, tx, w) #compute the gradient for the descent
-        loss = compute_loss(y, tx, w) #compute the loss to show it
+        #loss = compute_loss(y, tx, w) #compute the loss to show it
         
         w = w - gamma * grad
 
-        print("GD iter. {bi}/{ti}: loss={l}, w0={w0}, w1={w1}".format(
-              bi=n_iter, ti=max_iters - 1, l=loss, w0=w[0], w1=w[1]))
+        #print("GD iter. {bi}/{ti}: loss={l}, w0={w0}, w1={w1}".format(
+        #      bi=n_iter, ti=max_iters - 1, l=loss, w0=w[0], w1=w[1]))
+    loss = compute_loss(y, tx, w) #compute the loss to show it
 
     return w, loss
 
@@ -115,13 +121,15 @@ def least_squares_SGD(y, tx, initial_w, max_iters, gamma):
     
     for n_iter in range(max_iters):
         grad = compute_stoch_gradient(y, tx, w, len(y) // 10)
-        loss = compute_loss(y, tx, w)
+        #loss = compute_loss(y, tx, w)
         
         w = w - gamma * grad
         
 
-        print("SGD iter. {bi}/{ti}: loss={l}, w0={w0}, w1={w1}".format(
-              bi=n_iter, ti=max_iters - 1, l=loss, w0=w[0], w1=w[1]))
+        #print("SGD iter. {bi}/{ti}: loss={l}, w0={w0}, w1={w1}".format(
+        #      bi=n_iter, ti=max_iters - 1, l=loss, w0=w[0], w1=w[1]))
+    
+    loss = compute_loss(y, tx, w)
     
     return w, loss
 
