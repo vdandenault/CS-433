@@ -19,10 +19,11 @@ def main():
 
     initial_w = np.zeros((input_data_train.shape[1],1))
     max_iters = 100
-    gamma = 0.01
+    gamma = 1e-10
     lambda_ = 0.5
 
     print("time to train!")
+    w, loss = least_squares_GD(yb_train, input_data_train, initial_w, max_iters, gamma)
     #w, _ = logistic_regression(yb_train, input_data_train, initial_w, max_iters, gamma)
     #labels = predict_logistic_regression(input_data_test.T, w)
 
