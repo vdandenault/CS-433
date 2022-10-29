@@ -5,7 +5,7 @@ This repository contains Project 1 of the Machine Learning (CS-433) course given
 ## Team Members
 - Jacob Schillemans
 - Vincent Dandenault
-- 
+- Fabrice 
 
 ## Project structure: 
 
