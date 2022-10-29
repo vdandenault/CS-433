@@ -19,7 +19,6 @@ def gradients(X, y, y_hat):
 def normalize(X):
     return [(X - X.mean(axis=0))/X.std(axis=0) for _ in range(X.shape[1])]
 
-
 def compute_loss(y, tx, w): #loss for least squares
     N = y.shape[0]
     return (1/(2*N)) * sum((y[i] - tx[i].T @ w) ** 2  for i in range(N))
