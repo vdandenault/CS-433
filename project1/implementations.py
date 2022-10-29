@@ -1,4 +1,7 @@
 import numpy as np
+from predict import *
+from preprocessing import *
+from crossvalidation import *
 
 def compute_loss(y, tx, w):
     N = y.shape[0]
@@ -17,18 +20,6 @@ def gradients(X, y, y_hat):
 def normalize(X):
     return [(X - X.mean(axis=0))/X.std(axis=0) for _ in range(X.shape[1])]
 
-def predict_logistic_regression(X, w):
-    preds = np.array(sigmoid(predict(X, w)))
-    pred_class = [1 if i > 0.5 else -1 for i in preds]
-    return pred_class
-
-def predict(tx, w):
-    return tx.T @ w
-
-def predict_least_squares(X, w):
-    preds = predict(X, w)
-    pred_class = [1 if i > 0.5 else -1 for i in preds]
-    return pred_class
 
 def compute_loss(y, tx, w): #loss for least squares
     N = y.shape[0]
