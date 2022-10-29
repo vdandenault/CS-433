@@ -61,7 +61,7 @@ def build_k_indices(y, k_fold, seed):
     return np.array(k_indices)
 
 
-def cross_validation(y, x, k_indices, k, degree, method, lambda_ = None):
+def cross_validation(y, x, k_indices, k, degree, method, *args):
 
     """
     Return the test and train accuracy of a given method for a fold corresponding to k_indices
@@ -87,10 +87,15 @@ def cross_validation(y, x, k_indices, k, degree, method, lambda_ = None):
 
     x_train, x_test = preprocess(x_train, x_test, degree)
 
-    if lambda_ == None:
+    if args == []:
         w, _ = method(y_train, x_train)
     else:
-        w, _ = method(y_train, x_train, lambda_)
+        if len(args) == 3:
+            #the first one is initial_w, we have to redefine it since there are more features in the preprocessed data
+            args = list(args)
+            args[0] = np.zeros((x_train.shape[1], 1))
+
+        w, _ = method(y_train, x_train, *args)
        
     train_labels = predict_labels(w, x_train)
     test_labels = predict_labels(w, x_test)
@@ -100,4 +105,47 @@ def cross_validation(y, x, k_indices, k, degree, method, lambda_ = None):
     
     return train_acc, test_acc
 
+if __name__ == "__main__": #run crossvalidation on algorithms
+    import os, pickle
 
+    if not os.path.exists("data.p"):
+        yb_train, input_data_train, ids_train = load_csv_data(data_path='../Data/train.csv')
+        yb_test, input_data_test, ids_test = load_csv_data(data_path='../Data/test.csv')
+        print("Data is loaded")
+        pickle.dump((yb_train, input_data_train, ids_train, yb_test, input_data_test, ids_test), open("data.p", "wb"))
+    else:
+        yb_train, input_data_train, ids_train, yb_test, input_data_test, ids_test = pickle.load(open("data.p", "rb"))
+
+    seed = 15
+
+    def nbFeaturesPoly(x):
+        nb = x
+
+
+    initial_w = np.zeros((input_data_train.shape[1],1)) #for least_squares
+    max_iters = 5000
+    gamma = 3e-7
+
+    degree = 8
+    lambda_ = 0.001
+
+    nb_k = 5
+    k_indices = build_k_indices(yb_train, nb_k, seed)
+
+    train_accs = np.zeros((nb_k,))
+    test_accs = np.zeros((nb_k,))
+
+    print("Time to train!")
+    for k in range(nb_k):
+        #ridge regression
+        #train_accs[k], test_accs[k] = cross_validation(yb_train, input_data_train,  k_indices, k, degree, ridge_regression, lambda_)
+
+        #least_squares GD
+        train_accs[k], test_accs[k] = cross_validation(yb_train, input_data_train,  k_indices, k, degree, least_squares_GD, initial_w, max_iters, gamma)
+        
+        #least_squares SGD
+        #train_accs[k], test_accs[k] = cross_validation(yb_train, input_data_train,  k_indices, k, degree, least_squares_SGD, initial_w, max_iters, gamma)
+        
+        print("Fold:", k , " Training accuracy:",  train_accs[k], " Test accuracy: ", test_accs[k])
+
+    print("Average test accuracy: ",  np.average(test_accs))
