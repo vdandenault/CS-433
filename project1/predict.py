@@ -16,6 +16,14 @@ def accuracy(pred, val):
     acc = total_acc / len(pred)
     return acc
 
+def predict_least_squares(w, tx):
+    """
+    Gives predictions given weights w and test data tx for least squares
+    """
+    preds = tx.T @ w #-> shape (1, N) where N is the number of rows of data
+    pred_class = [1 if preds[0][i] > 0 else -1 for i in range(len(preds))] 
+    return pred_class
+
 def predict_logistic_regression(w, tx):
     """
     Gives predictions given weights w and test data tx for logistic regression
