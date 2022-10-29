@@ -23,7 +23,7 @@ def compute_loss(y, tx, w): #loss for least squares
     N = y.shape[0]
     return (1/(2*N)) * sum((y[i] - tx[i].T @ w) ** 2  for i in range(N))
 
-def least_squares_GD(y, tx, initial_w, max_iters, gamma):
+def least_squares_GD(y, tx, initial_w, max_iters, gamma, printEpochs = False):
     """The Gradient Descent (GD) algorithm.
         
     Args:
@@ -54,13 +54,13 @@ def least_squares_GD(y, tx, initial_w, max_iters, gamma):
         grad = compute_gradient_least_squares(y, tx, w) #compute the gradient for the descent
         w = w - gamma * grad
 
-        print("GD least squares iter. {bi}/{ti}".format(
-              bi=n_iter+1, ti=max_iters))
+        if printEpochs:
+            print("GD least squares iter. {bi}/{ti}".format(bi=n_iter+1, ti=max_iters))
 
     loss = compute_loss(y, tx, w) #compute the loss to show it
     return w, loss
 
-def least_squares_SGD(y, tx, initial_w, max_iters, gamma):
+def least_squares_SGD(y, tx, initial_w, max_iters, gamma, printEpochs = False):
     """The Stochastic Gradient Descent (SGD) algorithm.
         
     Args:
@@ -103,8 +103,8 @@ def least_squares_SGD(y, tx, initial_w, max_iters, gamma):
         grad = compute_stoch_gradient(y, tx, w, len(y) // 100)
         w = w - gamma * grad
 
-        print("SGD least squares iter. {bi}/{ti}".format(
-              bi=n_iter+1, ti=max_iters))
+        if printEpochs:
+            print("SGD least squares iter. {bi}/{ti}".format(bi=n_iter+1, ti=max_iters))
     
     loss = compute_loss(y, tx, w)
     return w, loss
