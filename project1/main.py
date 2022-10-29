@@ -1,6 +1,6 @@
 from helpers import load_csv_data, create_csv_submission
 from implementations import predict_least_squares, ridge_regression, least_squares_GD, least_squares,  \
-        predict_logistic_regression, logistic_regression, reg_logistic_regression
+        predict_logistic_regression, logistic_regression, reg_logistic_regression, least_squares_SGD
 import numpy as np
 
 import pickle, os
@@ -18,19 +18,26 @@ def main():
         print("sunglasses on")
 
     initial_w = np.zeros((input_data_train.shape[1],1))
-    max_iters = 100
-    gamma = 1e-10
+    #set of parameters A : max_iters, gamma, lambda_ = 500, 1e-10, 0.5
+    #set of parameters B : max_iters, gamma, lambda_ = 5000, 1e-10, 0.5
+    max_iters = 10000
+    gamma = 3e-7
+    #gamma = 3e-7 pour GD et SGD
     lambda_ = 0.5
 
     print("time to train!")
-    w, _ = least_squares_GD(yb_train, input_data_train, initial_w, max_iters, gamma)
+    #w, loss = least_squares_GD(yb_train, input_data_train, initial_w, max_iters, gamma)
+    w, loss = least_squares_SGD(yb_train, input_data_train, initial_w, max_iters, gamma)
+    print(w, loss)
     #w, _ = logistic_regression(yb_train, input_data_train, initial_w, max_iters, gamma)
+    #print(_)
     #labels = predict_logistic_regression(input_data_test.T, w)
 
     #w, _ = reg_logistic_regression(yb_train, input_data_train, lambda_, initial_w, max_iters, gamma)
+    #labels = predict_logistic_regression(input_data_test.T, w)
     labels = predict_least_squares(input_data_test.T, w)
 
-    create_csv_submission(ids=ids_test, y_pred=labels, name="Results/Submission_least_squares_GD")
+    create_csv_submission(ids=ids_test, y_pred=labels, name="Results/Submission_least_squares_SGD_10000.csv")
 
 if __name__ == "__main__":
     main()
