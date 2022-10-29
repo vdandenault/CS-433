@@ -13,6 +13,7 @@ The project is structured in the following way:
 
 ```markdown
 .
+```
 
 ## Instructions to run:
 
