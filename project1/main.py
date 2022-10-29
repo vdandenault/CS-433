@@ -1,6 +1,8 @@
-from helpers import load_csv_data, create_csv_submission
-from implementations import predict_least_squares, ridge_regression, least_squares_GD, least_squares,  \
-        predict_logistic_regression, logistic_regression, reg_logistic_regression, least_squares_SGD
+from helpers import *
+from implementations import *
+from preprocessing import *
+from predict import *
+from crossvalidation import *
 import numpy as np
 
 import pickle, os
@@ -8,14 +10,16 @@ import pickle, os
 def main():
     print("Reading the data")
     if not os.path.exists("data.p"):
-        yb_train, input_data_train, ids_train = load_csv_data(data_path='Data/train.csv')
-        yb_test, input_data_test, ids_test = load_csv_data(data_path='Data/test.csv')
-        print("data is loaded")
+        yb_train, input_data_train, ids_train = load_csv_data(data_path='../Data/train.csv')
+        yb_test, input_data_test, ids_test = load_csv_data(data_path='../Data/test.csv')
+        print("Data is loaded")
 
         pickle.dump((yb_train, input_data_train, ids_train, yb_test, input_data_test, ids_test), open("data.p", "wb"))
     else:
         yb_train, input_data_train, ids_train, yb_test, input_data_test, ids_test = pickle.load(open("data.p", "rb"))
-        print("sunglasses on")
+        print("Sunglasses on")
+
+    seed = 15
 
     initial_w = np.zeros((input_data_train.shape[1],1))
     #set of parameters A : max_iters, gamma, lambda_ = 500, 1e-10, 0.5
