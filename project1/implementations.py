@@ -24,7 +24,7 @@ def predict_logistic_regression(X, w):
 def predict(tx, w):
     return tx.T @ w
 
-def predict_least_squares(X, w):
+def predict_least_squares(X, w): #prediction for least squares (classification depending on the value given by the model)
     preds = predict(X, w)
     pred_class = [1 if i > 0 else -1 for i in preds]
     return pred_class
@@ -37,9 +37,9 @@ def least_squares_GD(y, tx, initial_w, max_iters, gamma):
     """The Gradient Descent (GD) algorithm.
         
     Args:
-        y: numpy array of shape=(N, )
-        tx: numpy array of shape=(N,2)
-        initial_w: numpy array of shape=(2, ). The initial guess (or the initialization) for the model parameters
+        y: numpy array of shape=(N, ) #N is the number of rows of the train set
+        tx: numpy array of shape=(N,x) #x is the number of features in the train set
+        initial_w: numpy array of shape=(x, ). The initial guess (or the initialization) for the model parameters
         max_iters: a scalar denoting the total number of iterations of GD
         gamma: a scalar denoting the stepsize
         
@@ -51,27 +51,32 @@ def least_squares_GD(y, tx, initial_w, max_iters, gamma):
     def compute_gradient_least_squares(y, tx, w):
         N = y.shape[0]
         A = np.reshape(tx.T @ y, (tx.T.shape[0], 1))
+        #reshape to make sure the following expression works as intended
+        #we had issues when that reshape was not done
 
-        return -(1/N) * (tx.T @ tx @ w - A) #formula
+        return (1/N) * (tx.T @ (tx @ w) - A)
+        #formula of the gradient : (1/N) * tx.T @ (tx @ w - y) 
+        #computing it this way requires way too much memory for the intermediate steps (466 GB, for computing tx.t @ tx)
+        #that's why the formula has been split in the implementation
 
-    # Define parameters to store w and loss
     w = initial_w
-    for n_iter in range(max_iters):
+    for n_iter in range(max_iters): #iterations of gradient descent
         grad = compute_gradient_least_squares(y, tx, w) #compute the gradient for the descent
-        
         w = w - gamma * grad
-        
-    loss = compute_loss(y, tx, w) #compute the loss to show it
 
+        print("GD least squares iter. {bi}/{ti}".format(
+              bi=n_iter+1, ti=max_iters))
+
+    loss = compute_loss(y, tx, w) #compute the loss to show it
     return w, loss
 
 def least_squares_SGD(y, tx, initial_w, max_iters, gamma):
     """The Stochastic Gradient Descent (SGD) algorithm.
         
     Args:
-        y: numpy array of shape=(N, )
-        tx: numpy array of shape=(N,2)
-        initial_w: numpy array of shape=(2, ). The initial guess (or the initialization) for the model parameters
+        y: numpy array of shape=(N, ) #N is the number of rows of the train set
+        tx: numpy array of shape=(N,x) #x is the number of features in the train set
+        initial_w: numpy array of shape=(x, ). The initial guess (or the initialization) for the model parameters
         max_iters: a scalar denoting the total number of iterations of GD
         gamma: a scalar denoting the stepsize
         
@@ -81,50 +86,37 @@ def least_squares_SGD(y, tx, initial_w, max_iters, gamma):
     """
     
     def compute_stoch_gradient(y, tx, w, batch_size):
-        """Compute a stochastic gradient at w from just few examples n and their corresponding y_n labels.
-            
-        Args:
-            y: numpy array of shape=(N, )
-            tx: numpy array of shape=(N,2)
-            w: numpy array of shape=(2, ). The vector of model parameters.
-            
-        Returns:
-            A numpy array of shape (2, ) (same shape as w), containing the stochastic gradient of the loss at w.
-        """
+        #Compute a stochastic gradient at w from just few examples n and their corresponding y_n labels.
         
-        def batch_iter(y, tx, batch_size, num_batches=1, shuffle=True):
-            data_size = len(y)
+        def batch_iter(y, tx, batch_size): #compute a random mini-batch from the train set
+            shuffle_indices = list(np.random.randint(0, len(y)-1) for _ in range(batch_size))
+            #there might be duplicates, but given the size of the datasets we are using
+            #and the relative size of the batch, compared to the size of the train set
+            #duplicates are pretty rare
 
-            if shuffle:
-                shuffle_indices = np.random.permutation(np.arange(data_size))
-                shuffled_y = y[shuffle_indices]
-                shuffled_tx = tx[shuffle_indices]
-            else:
-                shuffled_y = y
-                shuffled_tx = tx
+            shuffled_y = y[shuffle_indices]
+            shuffled_tx = tx[shuffle_indices]
                 
-            for batch_num in range(num_batches):
-                start_index = batch_num * batch_size
-                end_index = min((batch_num + 1) * batch_size, data_size)
-                if start_index != end_index:
-                    yield shuffled_y[start_index:end_index], shuffled_tx[start_index:end_index]
+            return shuffled_y, shuffled_tx
 
         #prepare a random mini-batch of train data, the gradient will be computed only for this subset
-        yStoch, txStoch = next(batch_iter(y, tx, batch_size))
+        yStoch, txStoch = batch_iter(y, tx, batch_size)
         N = yStoch.shape[0]
-        A = np.reshape(txStoch.T @ yStoch, (txStoch.T.shape[0], 1))
+        A = np.reshape(txStoch.T @ yStoch, (txStoch.T.shape[0], 1)) 
+        #reshape to make sure the following works as intended
+        #we had issues when that reshape was not done
 
-        return -(1/N) * (txStoch.T @ txStoch @ w - A) #formula
+        return (1/N) * (txStoch.T @ (txStoch @ w) - A) #formula for the gradient of the quadratic error
 
-    # Define parameters to store w and loss
     w = initial_w
-    
-    for n_iter in range(max_iters):
-        grad = compute_stoch_gradient(y, tx, w, len(y) // 10)
+    for n_iter in range(max_iters): #compute the iterations of the gradient descent
+        grad = compute_stoch_gradient(y, tx, w, len(y) // 100)
         w = w - gamma * grad
+
+        print("SGD least squares iter. {bi}/{ti}".format(
+              bi=n_iter+1, ti=max_iters))
     
     loss = compute_loss(y, tx, w)
-    
     return w, loss
 
 def least_squares(y, tx):
