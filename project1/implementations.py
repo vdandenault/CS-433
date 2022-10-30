@@ -172,7 +172,7 @@ def logistic_regression(y, tx, initial_w, max_iters, gamma):
         losses = []
         y = y.reshape(m, 1)
         b = 0
-        for epoch in range(epochs):
+        for _ in range(epochs):
             for i in range((m-1)//batch_size + 1):
                 start_i = i*batch_size
                 end_i = start_i + batch_size

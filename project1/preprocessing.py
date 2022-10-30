@@ -51,7 +51,7 @@ def preprocess(input_data_train, input_data_test, degree):
         input_data_test[:, i] = np.where(feature > np.percentile(feature,100-perc), np.percentile(feature,100-perc), feature)
 
     # Build a polynomial basis 
-    x_train = build_poly(input_data_train, degree)
-    x_test = build_poly(input_data_test, degree)
+    #x_train = build_poly(input_data_train, degree)
+    #x_test = build_poly(input_data_test, degree)
 
-    return x_train, x_test
+    return input_data_train, input_data_test
