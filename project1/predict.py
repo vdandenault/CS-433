@@ -1,8 +1,6 @@
 import numpy as np
-import warnings
 
 def sigmoid(z):
-    warnings.filterwarnings('ignore')
     return 1.0/(1.0 + np.exp(-z))
 
 def accuracy(pred, val):

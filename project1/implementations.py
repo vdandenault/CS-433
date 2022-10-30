@@ -12,7 +12,7 @@ def gradients(X, y, y_hat):
     db = (1/X.shape[0])*np.sum((y_hat - y)) 
     return dw, db
 
-def least_squares_GD(y, tx, initial_w, max_iters, gamma, printEpochs = False):
+def least_squares_GD(y, tx, initial_w, max_iters, gamma, printEpochs=False):
     """The Gradient Descent (GD) algorithm.
         
     Args:
@@ -65,30 +65,21 @@ def least_squares_SGD(y, tx, initial_w, max_iters, gamma, printEpochs = False):
     """
     
     def compute_stoch_gradient(y, tx, w, batch_size):
-        #Compute a stochastic gradient at w from just few examples n and their corresponding y_n labels.
-        
-        def batch_iter(y, tx, batch_size): #compute a random mini-batch from the train set
+        def batch_iter(y, tx, batch_size): 
             shuffle_indices = list(np.random.randint(0, len(y)-1) for _ in range(batch_size))
-            #there might be duplicates, but given the size of the datasets we are using
-            #and the relative size of the batch, compared to the size of the train set
-            #duplicates are pretty rare
-
             shuffled_y = y[shuffle_indices]
             shuffled_tx = tx[shuffle_indices]
                 
             return shuffled_y, shuffled_tx
 
-        #prepare a random mini-batch of train data, the gradient will be computed only for this subset
         yStoch, txStoch = batch_iter(y, tx, batch_size)
         N = yStoch.shape[0]
         A = np.reshape(txStoch.T @ yStoch, (txStoch.T.shape[0], 1)) 
-        #reshape to make sure the following works as intended
-        #we had issues when that reshape was not done
 
-        return (1/N) * (txStoch.T @ (txStoch @ w) - A) #formula for the gradient of the quadratic error
+        return (1/N) * (txStoch.T @ (txStoch @ w) - A) 
 
     w = initial_w
-    for n_iter in range(max_iters): #compute the iterations of the gradient descent
+    for n_iter in range(max_iters): 
         grad = compute_stoch_gradient(y, tx, w, len(y) // 100)
         w = w - gamma * grad
 
@@ -167,30 +158,28 @@ def logistic_regression(y, tx, initial_w, max_iters, gamma):
         w: optimal weights, numpy array of shape(D,), D is the number of features.
         loss: return the loss of the training.
     """
-    def train(X, y, epochs, lr, initial_w):
+    def train(y, X, epochs, lr, initial_w):
         m, _ = X.shape
         w = initial_w
-        b = 0
         batch_size = 100
-        y = y.reshape(m,1)
-
         losses = []
+        y = y.reshape(m, 1)
+        b = 0
         for _ in range(epochs):
             for i in range((m-1)//batch_size + 1):
                 start_i = i*batch_size
                 end_i = start_i + batch_size
                 xb = X[start_i:end_i]
                 yb = y[start_i:end_i]
-
-                y_hat = sigmoid(np.dot(xb, w) + b)
+                y_hat = sigmoid(np.dot(xb, w))
                 dw, db = gradients(xb, yb, y_hat)
                 w -= lr*dw
                 b -= lr*db
-
-            losses.append(compute_loss(y, X, w))
-        
+            loss = compute_loss(y, X, w)
+            print(loss)
+            losses.append(loss)
         return w, losses
-    return train(X=tx, y=y, epochs=max_iters, lr=gamma, initial_w=initial_w) 
+    return train(y=y, X=tx, epochs=max_iters, lr=gamma, initial_w=initial_w) 
 
 def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma): 
     """Calculate the logistic regression with regularizaiton term.

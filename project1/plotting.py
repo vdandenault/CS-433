@@ -23,5 +23,4 @@ def plot_loss_function(train_loss, nb_epochs):
     plt.title('Training Loss')
     plt.xlabel('Epochs')
     plt.ylabel('Loss')
-    plt.legend(loc='best')
     plt.show()
