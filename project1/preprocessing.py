@@ -1,6 +1,5 @@
 import numpy as np
 
-
 def standardize(x):
     """Standardize the original data set."""
     mean_x = np.mean(x)
@@ -43,7 +42,6 @@ def preprocess(input_data_train, input_data_test, degree):
 
     # Remove the outliers in the features by replacing them with a less extreme value.
     perc = 7
-
     for i, feature in enumerate(input_data_train.T):
         input_data_train[:, i] = np.where(feature < np.percentile(feature,perc), np.percentile(feature,perc), feature)
         input_data_train[:, i] = np.where(feature > np.percentile(feature,100-perc), np.percentile(feature,100-perc), feature)

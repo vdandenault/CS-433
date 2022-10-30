@@ -5,7 +5,6 @@ from crossvalidation import *
 
 def compute_loss(y, tx, w):
     N = y.shape[0]
-
     return (1/(2*N)) * sum((y[i] - tx[i].T @ w) ** 2  for i in range(N))
 
 def sigmoid(z):
@@ -15,13 +14,6 @@ def gradients(X, y, y_hat):
     dw = (1/X.shape[0])*np.dot(X.T, (y_hat - y))
     db = (1/X.shape[0])*np.sum((y_hat - y)) 
     return dw, db
-
-def normalize(X):
-    return [(X - X.mean(axis=0))/X.std(axis=0) for _ in range(X.shape[1])]
-
-def compute_loss(y, tx, w): #loss for least squares
-    N = y.shape[0]
-    return (1/(2*N)) * sum((y[i] - tx[i].T @ w) ** 2  for i in range(N))
 
 def least_squares_GD(y, tx, initial_w, max_iters, gamma, printEpochs = False):
     """The Gradient Descent (GD) algorithm.
