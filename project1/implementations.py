@@ -1,11 +1,18 @@
+from tkinter import W
 import numpy as np
 from predict import *
 from preprocessing import *
 from crossvalidation import *
 
-def compute_loss(y, tx, w):
+EPSILON = 1e-5 
+
+def compute_loss(y, tx, w): #RMSE
     N = y.shape[0]
     return (1/(2*N)) * sum((y[i] - tx[i].T @ w) ** 2  for i in range(N))
+
+def compute_log_loss(y, y_hat): 
+    loss = -np.mean(y*(np.log(y_hat + EPSILON)) - (1-y)*np.log(1-y_hat + EPSILON))
+    return loss
 
 def gradients(X, y, y_hat):    
     dw = (1/X.shape[0])*np.dot(X.T, (y_hat - y))
@@ -165,18 +172,17 @@ def logistic_regression(y, tx, initial_w, max_iters, gamma):
         losses = []
         y = y.reshape(m, 1)
         b = 0
-        for _ in range(epochs):
+        for epoch in range(epochs):
             for i in range((m-1)//batch_size + 1):
                 start_i = i*batch_size
                 end_i = start_i + batch_size
                 xb = X[start_i:end_i]
                 yb = y[start_i:end_i]
-                y_hat = sigmoid(np.dot(xb, w))
+                y_hat = sigmoid(np.dot(xb, w) + b)
                 dw, db = gradients(xb, yb, y_hat)
                 w -= lr*dw
-                b -= lr*db
-            loss = compute_loss(y, X, w)
-            print(loss)
+                b -= lr*db       
+            loss = compute_log_loss(y, sigmoid(np.dot(X, w) + b))
             losses.append(loss)
         return w, losses
     return train(y=y, X=tx, epochs=max_iters, lr=gamma, initial_w=initial_w) 
@@ -203,7 +209,7 @@ def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
         b = 0
         batch_size = 100
         y = y.reshape(m,1)
-        #losses = []
+        losses = []
         for _ in range(epochs):
             for i in range((m-1)//batch_size + 1):
                 start_i = i*batch_size
@@ -214,8 +220,9 @@ def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
                 dw, db = gradients(x_batch, y_batch, y_hat)
                 w -= (lr*dw) + (lambda_ * (dw*dw))
                 b -= (lr*db) + (lambda_ * (db*db))
-            loss = compute_loss(y, X, w)
+            loss = compute_log_loss(y, sigmoid(np.dot(X, w) + b))
+            losses.append(loss)
 
-        return w, loss
+        return w, losses
     return train(X=tx, y=y, epochs=max_iters, lr=gamma, initial_w=initial_w) 
 

@@ -20,12 +20,11 @@ def main():
     else:
         yb_train, input_data_train, ids_train, yb_test, input_data_test, ids_test = pickle.load(open("data.p", "rb"))
 
-    initial_w = np.zeros((input_data_train.shape[1],1))
+
+    _, n = input_data_train.shape
+    initial_w = np.zeros((n,1))
     max_iters = 100
     w, losses = logistic_regression(yb_train, input_data_train, initial_w, max_iters, 0.01)
-    #lambas = np.arange(0.01, 0.1, 0.01).tolist()
-    #gammas = np.arange(0.1, 1.0, 0.1).tolist()
-    #w, _ = hyperparameter_search_rlr(yb_train, input_data_train, initial_w, max_iters, lambas, gammas)
     labels = predict_logistic_regression(w, input_data_test)
     plot_loss_function(losses, max_iters)
     #create_csv_submission(ids=ids_test, y_pred=labels, name="Results/Submission_least_squares_SGD_10000.csv")
