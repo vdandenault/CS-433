@@ -24,11 +24,11 @@ def predict_least_squares(w, tx):
     pred_class = [1 if preds[0][i] > 0 else -1 for i in range(len(preds))] 
     return pred_class
 
-def predict_logistic_regression(w, tx):
+def predict_logistic_regression(w, x):
     """
     Gives predictions given weights w and test data tx for logistic regression
     """
-    preds = np.array(sigmoid(np.dot(tx,w)))
+    preds = np.array(sigmoid(np.dot(x,w)))
     pred_class = [1 if i > 0.5 else -1 for i in preds]
     return pred_class
 

@@ -73,8 +73,6 @@ def cross_validation(y, x, k_indices, k, degree, method, *args):
         k:          scalar, the k-th fold (N.B.: not to confused with k_fold which is the fold nums)
         lambda_:    scalar, cf. ridge_regression()
         degree:     scalar, cf. build_poly()
-        method
-
     """
     test = k_indices[k]
     train = np.ravel(k_indices[k])

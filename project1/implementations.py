@@ -201,11 +201,10 @@ def logistic_regression(y, tx, initial_w, max_iters, gamma):
                 w -= lr*dw
                 b -= lr*db
 
-            print("Epoch number: " + str(epoch))
+            #print("Epoch number: " + str(epoch))
             losses.append(compute_loss(y, X, w))
         
         return w, losses[-1]
-    
     return train(X=tx, y=y, epochs=max_iters, lr=gamma, initial_w=initial_w) 
 
 def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma): 
@@ -235,13 +234,12 @@ def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
             for i in range((m-1)//batch_size + 1):
                 start_i = i*batch_size
                 end_i = start_i + batch_size
-                xb = X[start_i:end_i]
-                yb = y[start_i:end_i]
-                y_hat = sigmoid(np.dot(xb, w) + b)
-                dw, db = gradients(xb, yb, y_hat)
+                x_batch = X[start_i:end_i]
+                y_batch = y[start_i:end_i]
+                y_hat = sigmoid(np.dot(x_batch, w) + b)
+                dw, db = gradients(x_batch, y_batch, y_hat)
                 w -= lr*(lambda_ * (dw*dw))
                 b -= lr* (lambda_ * (db*db))
-            print("Epoch number: " + str(epoch))
             losses.append(compute_loss(y, X, w))
 
         return w, losses[-1] 
