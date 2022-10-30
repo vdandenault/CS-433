@@ -16,11 +16,11 @@ def main():
     #input_data_train, input_data_test = preprocess(input_data_train, input_data_test, 2)
     _, n = input_data_train.shape
     initial_w = np.zeros((n,1))
-    max_iters = 50
+    max_iters = 100
     w, losses = logistic_regression(yb_train, input_data_train, initial_w, max_iters, 0.001)
     labels = predict_logistic_regression(w, input_data_test)
     plot_loss_function(losses, max_iters)
-    create_csv_submission(ids=ids_test, y_pred=labels, name="Results/Submission_logistic_regression_1000.csv")
+    create_csv_submission(ids=ids_test, y_pred=labels, name="Results/Submission_logistic_regression_100.csv")
 
 if __name__ == "__main__":
     main()
