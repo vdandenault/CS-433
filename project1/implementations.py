@@ -7,9 +7,6 @@ def compute_loss(y, tx, w):
     N = y.shape[0]
     return (1/(2*N)) * sum((y[i] - tx[i].T @ w) ** 2  for i in range(N))
 
-def sigmoid(z):
-    return 1.0/(1 + np.exp(-z))
-
 def gradients(X, y, y_hat):    
     dw = (1/X.shape[0])*np.dot(X.T, (y_hat - y))
     db = (1/X.shape[0])*np.sum((y_hat - y)) 
@@ -178,8 +175,7 @@ def logistic_regression(y, tx, initial_w, max_iters, gamma):
         y = y.reshape(m,1)
 
         losses = []
-
-        for epoch in range(epochs):
+        for _ in range(epochs):
             for i in range((m-1)//batch_size + 1):
                 start_i = i*batch_size
                 end_i = start_i + batch_size
@@ -188,15 +184,12 @@ def logistic_regression(y, tx, initial_w, max_iters, gamma):
 
                 y_hat = sigmoid(np.dot(xb, w) + b)
                 dw, db = gradients(xb, yb, y_hat)
-
-
                 w -= lr*dw
                 b -= lr*db
 
-            #print("Epoch number: " + str(epoch))
             losses.append(compute_loss(y, X, w))
         
-        return w, losses[-1]
+        return w, losses
     return train(X=tx, y=y, epochs=max_iters, lr=gamma, initial_w=initial_w) 
 
 def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma): 
@@ -221,8 +214,8 @@ def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
         b = 0
         batch_size = 100
         y = y.reshape(m,1)
-        losses = []
-        for epoch in range(epochs):
+        #losses = []
+        for _ in range(epochs):
             for i in range((m-1)//batch_size + 1):
                 start_i = i*batch_size
                 end_i = start_i + batch_size
@@ -230,10 +223,10 @@ def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
                 y_batch = y[start_i:end_i]
                 y_hat = sigmoid(np.dot(x_batch, w) + b)
                 dw, db = gradients(x_batch, y_batch, y_hat)
-                w -= lr*(lambda_ * (dw*dw))
-                b -= lr* (lambda_ * (db*db))
-            losses.append(compute_loss(y, X, w))
+                w -= (lr*dw) + (lambda_ * (dw*dw))
+                b -= (lr*db) + (lambda_ * (db*db))
+            loss = compute_loss(y, X, w)
 
-        return w, losses[-1] 
+        return w, loss
     return train(X=tx, y=y, epochs=max_iters, lr=gamma, initial_w=initial_w) 
 

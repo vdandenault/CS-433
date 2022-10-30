@@ -1,9 +1,9 @@
 import numpy as np
-from helpers import *
-from logistic_regression import *
+import warnings
 
 def sigmoid(z):
-    return 1.0/(1 + np.exp(-z))
+    warnings.filterwarnings('ignore')
+    return 1.0/(1.0 + np.exp(-z))
 
 def accuracy(pred, val):
     """
