@@ -1,4 +1,3 @@
-from tkinter import W
 import numpy as np
 from predict import *
 from preprocessing import *
@@ -6,7 +5,7 @@ from crossvalidation import *
 
 EPSILON = 1e-5 
 
-def compute_loss(y, tx, w): #RMSE
+def compute_loss(y, tx, w): 
     N = y.shape[0]
     return (1/(2*N)) * sum((y[i] - tx[i].T @ w) ** 2  for i in range(N))
 
