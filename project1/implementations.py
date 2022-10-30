@@ -1,4 +1,3 @@
-from tkinter import W
 import numpy as np
 from predict import *
 from preprocessing import *
