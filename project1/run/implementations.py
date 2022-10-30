@@ -1,11 +1,9 @@
 import numpy as np
-from predict import *
-from preprocessing import *
-from crossvalidation import *
 
 def compute_loss(y, tx, w):
     N = y.shape[0]
 
+    #return (1/(2*N)) * np.dot(e.T, e)
     return (1/(2*N)) * sum((y[i] - tx[i].T @ w) ** 2  for i in range(N))
 
 def sigmoid(z):
@@ -19,17 +17,21 @@ def gradients(X, y, y_hat):
 def normalize(X):
     return [(X - X.mean(axis=0))/X.std(axis=0) for _ in range(X.shape[1])]
 
-def compute_loss(y, tx, w): #loss for least squares
-    N = y.shape[0]
-    return (1/(2*N)) * sum((y[i] - tx[i].T @ w) ** 2  for i in range(N))
+def predict_logistic_regression(X, w):
+    preds = np.array(sigmoid(predict(X, w)))
+    pred_class = [1 if i > 0.5 else -1 for i in preds]
+    return pred_class
 
-def least_squares_GD(y, tx, initial_w, max_iters, gamma, printEpochs = False):
+def predict(tx, w):
+    return tx.T @ w
+
+def least_squares_GD(y, tx, initial_w, max_iters, gamma):
     """The Gradient Descent (GD) algorithm.
         
     Args:
-        y: numpy array of shape=(N, ) #N is the number of rows of the train set
-        tx: numpy array of shape=(N,x) #x is the number of features in the train set
-        initial_w: numpy array of shape=(x, ). The initial guess (or the initialization) for the model parameters
+        y: numpy array of shape=(N, )
+        tx: numpy array of shape=(N,2)
+        initial_w: numpy array of shape=(2, ). The initial guess (or the initialization) for the model parameters
         max_iters: a scalar denoting the total number of iterations of GD
         gamma: a scalar denoting the stepsize
         
@@ -39,34 +41,46 @@ def least_squares_GD(y, tx, initial_w, max_iters, gamma, printEpochs = False):
     """
 
     def compute_gradient_least_squares(y, tx, w):
+        """Computes the gradient at w.
+            
+        Args:
+            y: numpy array of shape=(N, )
+            tx: numpy array of shape=(N,2)
+            w: numpy array of shape=(2, ). The vector of model parameters.
+            
+        Returns:
+            An numpy array of shape (2, ) (same shape as w), containing the gradient of the loss at w.
+        """
+        
         N = y.shape[0]
-        A = np.reshape(tx.T @ y, (tx.T.shape[0], 1))
-        #reshape to make sure the following expression works as intended
-        #we had issues when that reshape was not done
 
-        return (1/N) * (tx.T @ (tx @ w) - A)
-        #formula of the gradient : (1/N) * tx.T @ (tx @ w - y) 
-        #computing it this way requires way too much memory for the intermediate steps (466 GB, for computing tx.t @ tx)
-        #that's why the formula has been split in the implementation
+        return - (1/N) * sum((y[i] - tx[i].T @ w) ** 2  for i in range(N))
 
+    # Define parameters to store w and loss
+    ws = [initial_w]
+    losses = []
     w = initial_w
-    for n_iter in range(max_iters): #iterations of gradient descent
-        grad = compute_gradient_least_squares(y, tx, w) #compute the gradient for the descent
+    for n_iter in range(max_iters):
+        grad = compute_gradient_least_squares(y, tx, w)
+        loss = compute_loss(y, tx, w)
+        
         w = w - gamma * grad
+        
+        # store w and loss
+        ws.append(w)
+        losses.append(loss)
+        print("GD iter. {bi}/{ti}: loss={l}, w0={w0}, w1={w1}".format(
+              bi=n_iter, ti=max_iters - 1, l=loss, w0=w[0], w1=w[1]))
 
-        if printEpochs:
-            print("GD least squares iter. {bi}/{ti}".format(bi=n_iter+1, ti=max_iters))
+    return ws[-1], losses[-1]
 
-    loss = compute_loss(y, tx, w) #compute the loss to show it
-    return w, loss
-
-def least_squares_SGD(y, tx, initial_w, max_iters, gamma, printEpochs = False):
+def least_squares_SGD(y, tx, initial_w, max_iters, gamma):
     """The Stochastic Gradient Descent (SGD) algorithm.
         
     Args:
-        y: numpy array of shape=(N, ) #N is the number of rows of the train set
-        tx: numpy array of shape=(N,x) #x is the number of features in the train set
-        initial_w: numpy array of shape=(x, ). The initial guess (or the initialization) for the model parameters
+        y: numpy array of shape=(N, )
+        tx: numpy array of shape=(N,2)
+        initial_w: numpy array of shape=(2, ). The initial guess (or the initialization) for the model parameters
         max_iters: a scalar denoting the total number of iterations of GD
         gamma: a scalar denoting the stepsize
         
@@ -76,38 +90,68 @@ def least_squares_SGD(y, tx, initial_w, max_iters, gamma, printEpochs = False):
     """
     
     def compute_stoch_gradient(y, tx, w, batch_size):
-        #Compute a stochastic gradient at w from just few examples n and their corresponding y_n labels.
+        """Compute a stochastic gradient at w from just few examples n and their corresponding y_n labels.
+            
+        Args:
+            y: numpy array of shape=(N, )
+            tx: numpy array of shape=(N,2)
+            w: numpy array of shape=(2, ). The vector of model parameters.
+            
+        Returns:
+            A numpy array of shape (2, ) (same shape as w), containing the stochastic gradient of the loss at w.
+        """
         
-        def batch_iter(y, tx, batch_size): #compute a random mini-batch from the train set
-            shuffle_indices = list(np.random.randint(0, len(y)-1) for _ in range(batch_size))
-            #there might be duplicates, but given the size of the datasets we are using
-            #and the relative size of the batch, compared to the size of the train set
-            #duplicates are pretty rare
+        def batch_iter(y, tx, batch_size, num_batches=1, shuffle=True):
+            """
+            Generate a minibatch iterator for a dataset.
+            Takes as input two iterables (here the output desired values 'y' and the input data 'tx')
+            Outputs an iterator which gives mini-batches of `batch_size` matching elements from `y` and `tx`.
+            Data can be randomly shuffled to avoid ordering in the original data messing with the randomness of the minibatches.
+            Example of use :
+            for minibatch_y, minibatch_tx in batch_iter(y, tx, 32):
+                <DO-SOMETHING>
+            """
+            data_size = len(y)
 
-            shuffled_y = y[shuffle_indices]
-            shuffled_tx = tx[shuffle_indices]
+            if shuffle:
+                shuffle_indices = np.random.permutation(np.arange(data_size))
+                shuffled_y = y[shuffle_indices]
+                shuffled_tx = tx[shuffle_indices]
+            else:
+                shuffled_y = y
+                shuffled_tx = tx
                 
-            return shuffled_y, shuffled_tx
+            for batch_num in range(num_batches):
+                start_index = batch_num * batch_size
+                end_index = min((batch_num + 1) * batch_size, data_size)
+                if start_index != end_index:
+                    yield shuffled_y[start_index:end_index], shuffled_tx[start_index:end_index]
 
-        #prepare a random mini-batch of train data, the gradient will be computed only for this subset
-        yStoch, txStoch = batch_iter(y, tx, batch_size)
-        N = yStoch.shape[0]
-        A = np.reshape(txStoch.T @ yStoch, (txStoch.T.shape[0], 1)) 
-        #reshape to make sure the following works as intended
-        #we had issues when that reshape was not done
+        N = y.shape[0]
+        yStoch, txStoch = next(batch_iter(y, tx, batch_size))
+        e = sum((yStoch[i] - txStoch[i].T @ w) ** 2  for i in range(N))
+        
+        return -(1/N) * txStoch.T @ sum((yStoch[i] - txStoch[i].T @ w) ** 2  for i in range(N))
 
-        return (1/N) * (txStoch.T @ (txStoch @ w) - A) #formula for the gradient of the quadratic error
-
+    # Define parameters to store w and loss
+    ws = [initial_w]
+    losses = []
     w = initial_w
-    for n_iter in range(max_iters): #compute the iterations of the gradient descent
-        grad = compute_stoch_gradient(y, tx, w, len(y) // 100)
-        w = w - gamma * grad
-
-        if printEpochs:
-            print("SGD least squares iter. {bi}/{ti}".format(bi=n_iter+1, ti=max_iters))
     
-    loss = compute_loss(y, tx, w)
-    return w, loss
+    for n_iter in range(max_iters):
+        grad = compute_stoch_gradient(y, tx, w, len(y) // 10)
+        loss = compute_loss(y, tx, w)
+        
+        w = w - gamma * grad
+        
+        # store w and loss
+        ws.append(w)
+        losses.append(loss)
+
+        print("SGD iter. {bi}/{ti}: loss={l}, w0={w0}, w1={w1}".format(
+              bi=n_iter, ti=max_iters - 1, l=loss, w0=w[0], w1=w[1]))
+    
+    return ws[-1], losses[-1]
 
 def least_squares(y, tx):
     """Calculate the least squares solution.
@@ -164,20 +208,7 @@ def ridge_regression(y, tx, lambda_):
 
 
 def logistic_regression(y, tx, initial_w, max_iters, gamma): 
-    """Calculate the logistic regression solution.
-       returns the loss and optimal weights.
-    
-    Args:
-        y: numpy array of shape (N,), N is the number of samples.
-        tx: numpy array of shape (N,D), D is the number of features.
-        initial_w: initial weigths of shape (D,).
-        max_iters: Number of maximum iterations for the training.
-        gamma: Learning rate for the SDG algorithm.
-    
-    Returns:
-        w: optimal weights, numpy array of shape(D,), D is the number of features.
-        loss: return the loss of the training.
-    """
+    #Logistic regression using gradient descent or SGD (y ∈ {0, 1})
     def train(X, y, epochs, lr, initial_w):
         m, _ = X.shape
         w = initial_w
@@ -209,21 +240,6 @@ def logistic_regression(y, tx, initial_w, max_iters, gamma):
     return train(X=tx, y=y, epochs=max_iters, lr=gamma, initial_w=initial_w) 
 
 def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma): 
-    """Calculate the logistic regression with regularizaiton term.
-       returns the loss and optimal weights.
-    
-    Args:
-        y: numpy array of shape (N,), N is the number of samples.
-        tx: numpy array of shape (N,D), D is the number of features.
-        lambda_: Regularization term. 
-        initial_w: initial weigths of shape (D,).
-        max_iters: Number of maximum iterations for the training.
-        gamma: Learning rate for the SDG algorithm.
-    
-    Returns:
-        w: optimal weights, numpy array of shape(D,), D is the number of features.
-        loss: return the loss of the training.
-    """ 
     def train(X, y, epochs, lr, initial_w):
         m, _ = X.shape
         w = initial_w
