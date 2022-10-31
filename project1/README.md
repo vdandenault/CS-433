@@ -15,6 +15,7 @@ In this directory, we present our approach to solving the classification problem
 The project is structured in the following way:
 
 ```markdown
+-  Project report (pdf)
 - _run.py_ produces the predictions of the best submission to the competition system (ridge regression). The predictions are saved in a file "Submission_ridge_regression.csv" saved in the Results folder.
 - _implementations.py_ contains the implementations of the 6 Machine Learning functions asked in the assignment (least_squares_GD, least_squares_SGD, least_squares, ridge_regression, logistic_regression, reg_logistic_regression).
 - _preprocessing.py_ contains functions for preprocessing the data (regularization and building polynomial features from the initial features).
