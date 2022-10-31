@@ -104,21 +104,10 @@ def cross_validation(y, x, k_indices, k, degree, method, *args):
     return train_acc, test_acc
 
 if __name__ == "__main__": #run crossvalidation on algorithms
-    import os, pickle
-
-    if not os.path.exists("data.p"):
-        yb_train, input_data_train, ids_train = load_csv_data(data_path='../Data/train.csv')
-        yb_test, input_data_test, ids_test = load_csv_data(data_path='../Data/test.csv')
-        print("Data is loaded")
-        pickle.dump((yb_train, input_data_train, ids_train, yb_test, input_data_test, ids_test), open("data.p", "wb"))
-    else:
-        yb_train, input_data_train, ids_train, yb_test, input_data_test, ids_test = pickle.load(open("data.p", "rb"))
+    yb_train, input_data_train, ids_train = load_csv_data(data_path='Data/train.csv')
+    yb_test, input_data_test, ids_test = load_csv_data(data_path='Data/test.csv')
 
     seed = 15
-
-    def nbFeaturesPoly(x):
-        nb = x
-
 
     initial_w = np.zeros((input_data_train.shape[1],1)) #for least_squares
     max_iters = 5000
