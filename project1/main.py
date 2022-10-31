@@ -8,9 +8,15 @@ from hyperparameter_search import *
 from plotting import plot_loss_function
     
 def main():
-    yb_train, input_data_train, ids_train = load_csv_data(data_path='Data/train.csv')
-    yb_test, input_data_test, ids_test = load_csv_data(data_path='Data/test.csv')
+    yb_train, input_data_train, _ = load_csv_data(data_path='Data/train.csv')
+    _, input_data_test, ids_test = load_csv_data(data_path='Data/test.csv')
+    
+    #Delete correlated features
+    #input_data_train[:, [26, 27, 28]] = 0
+
+    #Pre-processing
     #input_data_train, input_data_test = preprocess(input_data_train, input_data_test, 2)
+
     _, n = input_data_train.shape
     initial_w = np.zeros((n,1))
     max_iters = 100

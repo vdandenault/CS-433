@@ -36,10 +36,12 @@ def least_squares_GD(y, tx, initial_w, max_iters, gamma, printEpochs=False):
     def compute_gradient_least_squares(y, tx, w):
         N = y.shape[0]
         A = np.reshape(tx.T @ y, (tx.T.shape[0], 1))
+
         #reshape to make sure the following expression works as intended
         #we had issues when that reshape was not done
 
         return (1/N) * (tx.T @ (tx @ w) - A)
+        
         #formula of the gradient : (1/N) * tx.T @ (tx @ w - y) 
         #computing it this way requires way too much memory for the intermediate steps (466 GB, for computing tx.t @ tx)
         #that's why the formula has been split in the implementation
