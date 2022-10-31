@@ -5,8 +5,8 @@ from predict import *
 def main():
     degree = 8  #For the polynomial expansion
     lambda_ = 2e-7
-    yb_train, input_data_train, _ = load_csv_data(data_path='/Data/train.csv')
-    _, input_data_test, ids_test = load_csv_data(data_path='/Data/test.csv')
+    yb_train, input_data_train, _ = load_csv_data(data_path='Data/train.csv')
+    _, input_data_test, ids_test = load_csv_data(data_path='Data/test.csv')
     print("Data is loaded.")
     input_data_train, input_data_test = preprocess(input_data_train, input_data_test, degree)
     print("Preprocessing is finished.")
