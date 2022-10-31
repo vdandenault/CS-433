@@ -7,7 +7,7 @@ This repository contains Project 1 of the Machine Learning (CS-433) course given
 - Vincent Dandenault
 - Fabrice Nemo
 
-## Project structure: 
+## Project info: 
 In this directory, we present our approach to solving the classification problem around the Higgs Boson dataset simulated by the ATLAS experiment from CERN, elaborated in the context of the class CS-433 at EPFL.
 
 ## Project structure: 
