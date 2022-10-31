@@ -27,7 +27,7 @@ The project is structured in the following way:
 ```
 
 ## Instructions to run:
-To produce the predictions of our best submission (accuracy = 0.823, F1 score = 0.728) on AIcrowd, run the following command:
+To produce the predictions of our best submission (accuracy = 0.823, F1 score = 0.728) on AIcrowd, download the train and test data from the ML course and store it in a folder Data and then make an empty folder Result in the project directory. Then run the following command:
 ```markdown
 python3 run.py
 ```
