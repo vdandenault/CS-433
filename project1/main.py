@@ -8,11 +8,8 @@ from hyperparameter_search import *
 from plotting import plot_loss_function
     
 def main():
-    print("Reading the data")
     yb_train, input_data_train, ids_train = load_csv_data(data_path='Data/train.csv')
     yb_test, input_data_test, ids_test = load_csv_data(data_path='Data/test.csv')
-    print("Data is loaded")
-
     #input_data_train, input_data_test = preprocess(input_data_train, input_data_test, 2)
     _, n = input_data_train.shape
     initial_w = np.zeros((n,1))
